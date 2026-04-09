@@ -98,6 +98,7 @@ export function excluirAgendamento(id: string): boolean {
 }
 
 export function contarAgendamentosPorDia(agendamentos: Agendamento[], data: string, idExcluir?: string): number {
+  if (!agendamentos || !Array.isArray(agendamentos)) return 0;
   return agendamentos.filter(a => a.data === data && a.id !== idExcluir).length;
 }
 

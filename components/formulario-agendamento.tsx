@@ -21,6 +21,8 @@ interface FormularioAgendamentoProps {
 }
 
 export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, dataPreSelecionada, onFechar, onSalvar }: FormularioAgendamentoProps) {
+  const dataPre = dataPreSelecionada ?? null;
+  
   const [formData, setFormData] = useState({
     data: '',
     cliente: '',
@@ -50,7 +52,7 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
       });
     } else {
       setFormData({
-        data: dataPreSelecionada || new Date().toISOString().split('T')[0],
+        data: dataPre || new Date().toISOString().split('T')[0],
         cliente: '',
         periodo: '',
         vendedor: '',
@@ -60,7 +62,7 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
         retornoCombinado: '',
       });
     }
-  }, [agendamento, aberto, dataPreSelecionada ?? null]);
+  }, [agendamento, aberto, dataPre]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
