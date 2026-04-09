@@ -1,4 +1,4 @@
-import { Agendamento, StatusVisita } from './types';
+import { Agendamento, StatusVisita, Periodo } from './types';
 
 const clientes = [
   'Mercado São Jorge',
@@ -18,16 +18,7 @@ const clientes = [
   'Restaurante Família',
 ];
 
-const cidades = [
-  'Centro',
-  'Jardim América',
-  'Vila Nova',
-  'Bairro Industrial',
-  'Centro Comercial',
-  'Zona Sul',
-  'Zona Norte',
-  'Bairro Alto',
-];
+const periodos: Periodo[] = ['manha', 'tarde'];
 
 const observacoesExemplos = [
   'Cliente demonstrou interesse nos novos produtos',
@@ -82,7 +73,7 @@ export function gerarAgendamentosMock(): Agendamento[] {
       id: generateId(),
       data: data.toISOString().split('T')[0],
       cliente: randomItem(clientes),
-      cidadeBairro: Math.random() > 0.3 ? randomItem(cidades) : undefined,
+      periodo: Math.random() > 0.2 ? randomItem(periodos) : undefined,
       vendedor: randomItem(vendedores),
       observacoes: Math.random() > 0.2 ? randomItem(observacoesExemplos) : undefined,
       status,
@@ -97,4 +88,3 @@ export function gerarAgendamentosMock(): Agendamento[] {
 }
 
 export const CLIENTES_LISTA = clientes;
-export const CIDADES_LISTA = cidades;

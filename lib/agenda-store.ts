@@ -97,6 +97,10 @@ export function excluirAgendamento(id: string): boolean {
   return true;
 }
 
+export function contarAgendamentosPorDia(agendamentos: Agendamento[], data: string, idExcluir?: string): number {
+  return agendamentos.filter(a => a.data === data && a.id !== idExcluir).length;
+}
+
 export function filtrarAgendamentos(agendamentos: Agendamento[], filtros: FiltrosAgenda): Agendamento[] {
   return agendamentos.filter(agendamento => {
     const dataAgendamento = new Date(agendamento.data);
@@ -127,7 +131,6 @@ export function filtrarAgendamentos(agendamentos: Agendamento[], filtros: Filtro
       const encontrado = 
         agendamento.cliente.toLowerCase().includes(busca) ||
         agendamento.vendedor.toLowerCase().includes(busca) ||
-        agendamento.cidadeBairro?.toLowerCase().includes(busca) ||
         agendamento.observacoes?.toLowerCase().includes(busca);
       if (!encontrado) return false;
     }

@@ -182,6 +182,7 @@ export function DashboardAgenda() {
       <FormularioAgendamento
         aberto={formularioAberto}
         agendamento={agendamentoEditando}
+        todosAgendamentos={agendamentos}
         onFechar={() => {
           setFormularioAberto(false);
           setAgendamentoEditando(null);

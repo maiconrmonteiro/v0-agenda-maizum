@@ -7,22 +7,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Agendamento, StatusVisita, STATUS_CONFIG, VENDEDORES } from '@/lib/types';
-import { CIDADES_LISTA } from '@/lib/mock-data';
-import { Calendar, User, MapPin, FileText, CheckCircle } from 'lucide-react';
+import { Agendamento, StatusVisita, STATUS_CONFIG, VENDEDORES, Periodo, PERIODO_CONFIG } from '@/lib/types';
+import { contarAgendamentosPorDia } from '@/lib/agenda-store';
+import { Calendar, User, Clock, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface FormularioAgendamentoProps {
   aberto: boolean;
   agendamento?: Agendamento | null;
+  todosAgendamentos: Agendamento[];
   onFechar: () => void;
   onSalvar: (dados: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
 }
 
-export function FormularioAgendamento({ aberto, agendamento, onFechar, onSalvar }: FormularioAgendamentoProps) {
+export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, onFechar, onSalvar }: FormularioAgendamentoProps) {
   const [formData, setFormData] = useState({
     data: '',
     cliente: '',
-    cidadeBairro: '',
+    periodo: '' as Periodo | '',
     vendedor: '',
     observacoes: '',
     status: 'agendado' as StatusVisita,
@@ -30,12 +31,16 @@ export function FormularioAgendamento({ aberto, agendamento, onFechar, onSalvar 
     retornoCombinado: '',
   });
 
+  const agendamentosNoDia = formData.data 
+    ? contarAgendamentosPorDia(todosAgendamentos, formData.data, agendamento?.id) 
+    : 0;
+
   useEffect(() => {
     if (agendamento) {
       setFormData({
         data: agendamento.data,
         cliente: agendamento.cliente,
-        cidadeBairro: agendamento.cidadeBairro || '',
+        periodo: agendamento.periodo || '',
         vendedor: agendamento.vendedor,
         observacoes: agendamento.observacoes || '',
         status: agendamento.status,
@@ -46,7 +51,7 @@ export function FormularioAgendamento({ aberto, agendamento, onFechar, onSalvar 
       setFormData({
         data: new Date().toISOString().split('T')[0],
         cliente: '',
-        cidadeBairro: '',
+        periodo: '',
         vendedor: '',
         observacoes: '',
         status: 'agendado',
@@ -65,7 +70,7 @@ export function FormularioAgendamento({ aberto, agendamento, onFechar, onSalvar 
 
     onSalvar({
       ...formData,
-      cidadeBairro: formData.cidadeBairro || undefined,
+      periodo: formData.periodo || undefined,
       observacoes: formData.observacoes || undefined,
       resultadoVisita: formData.resultadoVisita || undefined,
       retornoCombinado: formData.retornoCombinado || undefined,
@@ -144,29 +149,42 @@ export function FormularioAgendamento({ aberto, agendamento, onFechar, onSalvar 
             </Select>
           </div>
 
-          {/* Cidade/Bairro */}
+          {/* Período */}
           <div className="space-y-2">
-            <Label htmlFor="cidadeBairro" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-blue-600" />
-              Cidade / Bairro
+            <Label htmlFor="periodo" className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-blue-600" />
+              Período
             </Label>
             <Select
-              value={formData.cidadeBairro || 'nenhum'}
-              onValueChange={(val) => setFormData({ ...formData, cidadeBairro: val === 'nenhum' ? '' : val })}
+              value={formData.periodo || 'nenhum'}
+              onValueChange={(val) => setFormData({ ...formData, periodo: val === 'nenhum' ? '' : val as Periodo })}
             >
               <SelectTrigger className="text-base">
                 <SelectValue placeholder="Selecione (opcional)" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="nenhum">Não informado</SelectItem>
-                {CIDADES_LISTA.map((cidade) => (
-                  <SelectItem key={cidade} value={cidade}>
-                    {cidade}
+                {Object.entries(PERIODO_CONFIG).map(([key, config]) => (
+                  <SelectItem key={key} value={key}>
+                    {config.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
+
+          {/* Alerta de agendamentos no dia */}
+          {agendamentosNoDia >= 2 && (
+            <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+              <div className="text-sm">
+                <p className="font-medium text-amber-800">Atenção: Dia com muitos compromissos</p>
+                <p className="text-amber-700">
+                  Já existem {agendamentosNoDia} agendamento{agendamentosNoDia > 1 ? 's' : ''} para esta data.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Status */}
           <div className="space-y-2">

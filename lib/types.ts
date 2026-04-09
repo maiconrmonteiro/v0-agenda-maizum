@@ -6,11 +6,13 @@ export type StatusVisita =
   | 'reagendar'
   | 'cancelado';
 
+export type Periodo = 'manha' | 'tarde';
+
 export interface Agendamento {
   id: string;
   data: string;
   cliente: string;
-  cidadeBairro?: string;
+  periodo?: Periodo;
   vendedor: string;
   observacoes?: string;
   status: StatusVisita;
@@ -19,6 +21,11 @@ export interface Agendamento {
   criadoEm: string;
   atualizadoEm: string;
 }
+
+export const PERIODO_CONFIG: Record<Periodo, { label: string; icon: string }> = {
+  manha: { label: 'Manhã', icon: '☀️' },
+  tarde: { label: 'Tarde', icon: '🌅' },
+};
 
 export interface FiltrosAgenda {
   mes: number;

@@ -1,10 +1,10 @@
 'use client';
 
-import { Agendamento } from '@/lib/types';
+import { Agendamento, PERIODO_CONFIG } from '@/lib/types';
 import { StatusBadge } from './status-badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, User, Pencil, Trash2, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, User, Pencil, Trash2, MessageSquare } from 'lucide-react';
 
 interface AgendamentoCardProps {
   agendamento: Agendamento;
@@ -42,10 +42,10 @@ export function AgendamentoCard({ agendamento, onEditar, onExcluir }: Agendament
                 <span>{agendamento.vendedor}</span>
               </div>
               
-              {agendamento.cidadeBairro && (
+              {agendamento.periodo && (
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 shrink-0 text-blue-600" />
-                  <span>{agendamento.cidadeBairro}</span>
+                  <Clock className="h-4 w-4 shrink-0 text-blue-600" />
+                  <span>{PERIODO_CONFIG[agendamento.periodo].label}</span>
                 </div>
               )}
               
