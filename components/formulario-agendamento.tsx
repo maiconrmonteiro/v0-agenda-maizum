@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Agendamento, StatusVisita, STATUS_CONFIG, VENDEDORES } from '@/lib/types';
-import { CLIENTES_LISTA, CIDADES_LISTA } from '@/lib/mock-data';
+import { CIDADES_LISTA } from '@/lib/mock-data';
 import { Calendar, User, MapPin, FileText, CheckCircle } from 'lucide-react';
 
 interface FormularioAgendamentoProps {
@@ -30,9 +30,6 @@ export function FormularioAgendamento({ aberto, agendamento, onFechar, onSalvar 
     retornoCombinado: '',
   });
 
-  const [clienteCustom, setClienteCustom] = useState('');
-  const [usarClienteCustom, setUsarClienteCustom] = useState(false);
-
   useEffect(() => {
     if (agendamento) {
       setFormData({
@@ -45,9 +42,6 @@ export function FormularioAgendamento({ aberto, agendamento, onFechar, onSalvar 
         resultadoVisita: agendamento.resultadoVisita || '',
         retornoCombinado: agendamento.retornoCombinado || '',
       });
-      const isCustom = !CLIENTES_LISTA.includes(agendamento.cliente);
-      setUsarClienteCustom(isCustom);
-      if (isCustom) setClienteCustom(agendamento.cliente);
     } else {
       setFormData({
         data: new Date().toISOString().split('T')[0],
@@ -59,22 +53,18 @@ export function FormularioAgendamento({ aberto, agendamento, onFechar, onSalvar 
         resultadoVisita: '',
         retornoCombinado: '',
       });
-      setClienteCustom('');
-      setUsarClienteCustom(false);
     }
   }, [agendamento, aberto]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const clienteFinal = usarClienteCustom ? clienteCustom : formData.cliente;
     
-    if (!formData.data || !clienteFinal || !formData.vendedor) {
+    if (!formData.data || !formData.cliente || !formData.vendedor) {
       return;
     }
 
     onSalvar({
       ...formData,
-      cliente: clienteFinal,
       cidadeBairro: formData.cidadeBairro || undefined,
       observacoes: formData.observacoes || undefined,
       resultadoVisita: formData.resultadoVisita || undefined,
@@ -117,45 +107,18 @@ export function FormularioAgendamento({ aberto, agendamento, onFechar, onSalvar 
 
           {/* Cliente */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-2">
+            <Label htmlFor="cliente" className="flex items-center gap-2">
               <User className="h-4 w-4 text-red-600" />
               Cliente *
             </Label>
-            <div className="space-y-2">
-              <Select
-                value={usarClienteCustom ? 'custom' : formData.cliente}
-                onValueChange={(val) => {
-                  if (val === 'custom') {
-                    setUsarClienteCustom(true);
-                    setFormData({ ...formData, cliente: '' });
-                  } else {
-                    setUsarClienteCustom(false);
-                    setFormData({ ...formData, cliente: val });
-                  }
-                }}
-              >
-                <SelectTrigger className="text-base">
-                  <SelectValue placeholder="Selecione o cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CLIENTES_LISTA.map((cliente) => (
-                    <SelectItem key={cliente} value={cliente}>
-                      {cliente}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="custom">+ Outro cliente</SelectItem>
-                </SelectContent>
-              </Select>
-              {usarClienteCustom && (
-                <Input
-                  placeholder="Nome do cliente"
-                  value={clienteCustom}
-                  onChange={(e) => setClienteCustom(e.target.value)}
-                  required
-                  className="text-base"
-                />
-              )}
-            </div>
+            <Input
+              id="cliente"
+              placeholder="Nome do cliente"
+              value={formData.cliente}
+              onChange={(e) => setFormData({ ...formData, cliente: e.target.value })}
+              required
+              className="text-base"
+            />
           </div>
 
           {/* Vendedor */}
@@ -281,7 +244,7 @@ export function FormularioAgendamento({ aberto, agendamento, onFechar, onSalvar 
             <Button 
               type="submit" 
               className="w-full bg-red-600 text-white hover:bg-red-700 sm:w-auto"
-              disabled={!formData.data || (!formData.cliente && !clienteCustom) || !formData.vendedor}
+              disabled={!formData.data || !formData.cliente || !formData.vendedor}
             >
               {isEdicao ? 'Salvar Alterações' : 'Adicionar'}
             </Button>

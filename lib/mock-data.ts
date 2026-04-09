@@ -69,7 +69,7 @@ export function gerarAgendamentosMock(): Agendamento[] {
   const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
   const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0);
   
-  const vendedores = ['Carlos Silva', 'Ana Paula', 'Roberto Santos', 'Mariana Costa', 'João Pedro'];
+  const vendedores = ['Ana Carla', 'Hercules', 'Rogerio', 'Claudir'];
   const statusList: StatusVisita[] = ['agendado', 'confirmado', 'realizado', 'sem_interesse', 'reagendar', 'cancelado'];
   
   for (let i = 0; i < 25; i++) {

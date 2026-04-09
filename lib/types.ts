@@ -39,9 +39,8 @@ export const STATUS_CONFIG: Record<StatusVisita, { label: string; color: string;
 };
 
 export const VENDEDORES = [
-  'Carlos Silva',
-  'Ana Paula',
-  'Roberto Santos',
-  'Mariana Costa',
-  'João Pedro',
+  'Ana Carla',
+  'Hercules',
+  'Rogerio',
+  'Claudir',
 ];

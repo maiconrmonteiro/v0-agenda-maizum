@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FiltrosAgenda, StatusVisita, STATUS_CONFIG, VENDEDORES } from '@/lib/types';
-import { CLIENTES_LISTA } from '@/lib/mock-data';
 import { Search, Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FiltrosAgendaProps {
@@ -69,28 +68,7 @@ export function FiltrosAgendaComponent({ filtros, onFiltrosChange }: FiltrosAgen
 
       {/* Filtros expandidos */}
       {expandido && (
-        <div className="grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-3">
-          {/* Filtro por Cliente */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-muted-foreground">Cliente</label>
-            <Select
-              value={filtros.cliente || 'todos'}
-              onValueChange={(val) => onFiltrosChange({ ...filtros, cliente: val === 'todos' ? undefined : val })}
-            >
-              <SelectTrigger className="text-base">
-                <SelectValue placeholder="Todos" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                {CLIENTES_LISTA.map((cliente) => (
-                  <SelectItem key={cliente} value={cliente}>
-                    {cliente}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
+        <div className="grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2">
           {/* Filtro por Vendedor */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-muted-foreground">Vendedor</label>
