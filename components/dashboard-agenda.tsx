@@ -53,8 +53,11 @@ export function DashboardAgenda() {
   const datasOrdenadas = Object.keys(agendamentosPorData).sort();
 
   // Handlers
-  const handleNovoAgendamento = () => {
+  const [dataPreSelecionada, setDataPreSelecionada] = useState<string | null>(null);
+
+  const handleNovoAgendamento = (data?: string) => {
     setAgendamentoEditando(null);
+    setDataPreSelecionada(data || null);
     setFormularioAberto(true);
   };
 
@@ -170,6 +173,16 @@ export function DashboardAgenda() {
                         onExcluir={handleExcluir}
                       />
                     ))}
+                    {agendamentosPorData[data].length < 2 && (
+                      <Button
+                        variant="outline"
+                        onClick={() => handleNovoAgendamento(data)}
+                        className="w-full border-dashed border-red-300 text-red-600 hover:border-red-400 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Adicionar agendamento neste dia
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -183,9 +196,11 @@ export function DashboardAgenda() {
         aberto={formularioAberto}
         agendamento={agendamentoEditando}
         todosAgendamentos={agendamentos}
+        dataPreSelecionada={dataPreSelecionada}
         onFechar={() => {
           setFormularioAberto(false);
           setAgendamentoEditando(null);
+          setDataPreSelecionada(null);
         }}
         onSalvar={handleSalvar}
       />

@@ -1,10 +1,10 @@
 'use client';
 
-import { Agendamento, PERIODO_CONFIG } from '@/lib/types';
+import { Agendamento } from '@/lib/types';
 import { StatusBadge } from './status-badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, User, Pencil, Trash2, MessageSquare } from 'lucide-react';
+import { Calendar, User, Pencil, Trash2, MessageSquare } from 'lucide-react';
 
 interface AgendamentoCardProps {
   agendamento: Agendamento;
@@ -29,6 +29,15 @@ export function AgendamentoCard({ agendamento, onEditar, onExcluir }: Agendament
                 {agendamento.cliente}
               </h3>
               <StatusBadge status={agendamento.status} />
+              {agendamento.periodo && (
+                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                  agendamento.periodo === 'manha' 
+                    ? 'bg-amber-100 text-amber-700' 
+                    : 'bg-blue-100 text-blue-700'
+                }`}>
+                  {agendamento.periodo === 'manha' ? 'Manhã' : 'Tarde'}
+                </span>
+              )}
             </div>
             
             <div className="space-y-1.5 text-sm text-muted-foreground">
@@ -41,13 +50,6 @@ export function AgendamentoCard({ agendamento, onEditar, onExcluir }: Agendament
                 <User className="h-4 w-4 shrink-0 text-amber-600" />
                 <span>{agendamento.vendedor}</span>
               </div>
-              
-              {agendamento.periodo && (
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 shrink-0 text-blue-600" />
-                  <span>{PERIODO_CONFIG[agendamento.periodo].label}</span>
-                </div>
-              )}
               
               {agendamento.observacoes && (
                 <div className="flex items-start gap-2">
