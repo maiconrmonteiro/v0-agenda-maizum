@@ -1,4 +1,4 @@
-export type StatusVisita = 
+export type StatusVisita =
   | 'agendado'
   | 'confirmado'
   | 'realizado'
@@ -6,7 +6,7 @@ export type StatusVisita =
   | 'reagendar'
   | 'cancelado';
 
-export type Periodo = 'manha' | 'tarde';
+export type Periodo = 'manha' | 'tarde' | 'dia_todo';
 
 export type TipoRecorrencia = 'nenhuma' | 'semanal' | 'mensal';
 
@@ -33,7 +33,9 @@ export interface Agendamento {
 export const PERIODO_CONFIG: Record<Periodo, { label: string; icon: string }> = {
   manha: { label: 'Manhã', icon: '☀️' },
   tarde: { label: 'Tarde', icon: '🌅' },
+  dia_todo: { label: 'Dia todo', icon: '📅' },
 };
+
 
 export interface FiltrosAgenda {
   mes: number;
