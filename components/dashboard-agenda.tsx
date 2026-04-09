@@ -11,7 +11,7 @@ import { EstadoVazio } from './estado-vazio';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Plus } from 'lucide-react';
-import { Agendamento, FiltrosAgenda } from '@/lib/types';
+import { Agendamento, FiltrosAgenda, TipoRecorrencia } from '@/lib/types';
 import { filtrarAgendamentos } from '@/lib/agenda-store';
 import {
   buscarAgendamentosPorMes,
@@ -80,11 +80,11 @@ export function DashboardAgenda() {
     setModalExclusaoAberto(true);
   };
 
-  const handleSalvar = useCallback(async (dados: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
+  const handleSalvar = useCallback(async (dados: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>, recorrencia?: TipoRecorrencia) => {
     if (agendamentoEditando) {
       await atualizarAgendamento(agendamentoEditando.id, dados);
     } else {
-      await criarAgendamento(dados);
+      await criarAgendamento(dados, recorrencia);
     }
     await carregarDados();
     setFormularioAberto(false);

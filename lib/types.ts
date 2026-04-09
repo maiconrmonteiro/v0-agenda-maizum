@@ -8,6 +8,14 @@ export type StatusVisita =
 
 export type Periodo = 'manha' | 'tarde';
 
+export type TipoRecorrencia = 'nenhuma' | 'semanal' | 'mensal';
+
+export const RECORRENCIA_CONFIG: Record<TipoRecorrencia, { label: string; descricao: string }> = {
+  nenhuma: { label: 'Não repetir', descricao: 'Apenas este agendamento' },
+  semanal: { label: 'Toda semana', descricao: 'Repete no mesmo dia da semana' },
+  mensal: { label: 'Uma vez por mês', descricao: 'Repete uma vez por mês' },
+};
+
 export interface Agendamento {
   id: string;
   data: string;

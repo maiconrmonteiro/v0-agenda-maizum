@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
-import { Agendamento, Periodo, StatusVisita } from '@/lib/types';
+import { Agendamento, Periodo, StatusVisita, TipoRecorrencia } from '@/lib/types';
 
 interface AgendamentoDB {
   id: string;
@@ -68,32 +68,64 @@ export async function buscarAgendamentosPorMes(ano: number, mes: number): Promis
   return (data || []).map(mapFromDB);
 }
 
+function gerarDatasRecorrentes(dataInicial: string, tipo: TipoRecorrencia): string[] {
+  const datas: string[] = [dataInicial];
+  const data = new Date(dataInicial);
+  
+  if (tipo === 'semanal') {
+    // Próximas 4 semanas
+    for (let i = 1; i <= 4; i++) {
+      const novaData = new Date(data);
+      novaData.setDate(novaData.getDate() + (7 * i));
+      datas.push(novaData.toISOString().split('T')[0]);
+    }
+  } else if (tipo === 'mensal') {
+    // Próximos 3 meses
+    for (let i = 1; i <= 3; i++) {
+      const novaData = new Date(data);
+      novaData.setMonth(novaData.getMonth() + i);
+      datas.push(novaData.toISOString().split('T')[0]);
+    }
+  }
+  
+  return datas;
+}
+
 export async function criarAgendamento(
-  dados: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>
+  dados: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>,
+  recorrencia?: TipoRecorrencia
 ): Promise<Agendamento | null> {
   const supabase = createClient();
   
+  // Gerar datas recorrentes se necessário
+  const datas = recorrencia && recorrencia !== 'nenhuma' 
+    ? gerarDatasRecorrentes(dados.data, recorrencia)
+    : [dados.data];
+  
+  // Criar registros para todas as datas
+  const registros = datas.map(data => ({
+    data: data,
+    cliente: dados.cliente,
+    periodo: dados.periodo || null,
+    vendedor: dados.vendedor,
+    observacoes: dados.observacoes || null,
+    status: dados.status,
+    resultado_visita: dados.resultadoVisita || null,
+    retorno_combinado: dados.retornoCombinado || null,
+  }));
+  
   const { data, error } = await supabase
     .from('agendamentos')
-    .insert({
-      data: dados.data,
-      cliente: dados.cliente,
-      periodo: dados.periodo || null,
-      vendedor: dados.vendedor,
-      observacoes: dados.observacoes || null,
-      status: dados.status,
-      resultado_visita: dados.resultadoVisita || null,
-      retorno_combinado: dados.retornoCombinado || null,
-    })
-    .select()
-    .single();
+    .insert(registros)
+    .select();
 
   if (error) {
     console.error('Erro ao criar agendamento:', error);
     return null;
   }
 
-  return mapFromDB(data);
+  // Retorna o primeiro agendamento criado
+  return data && data.length > 0 ? mapFromDB(data[0]) : null;
 }
 
 export async function atualizarAgendamento(

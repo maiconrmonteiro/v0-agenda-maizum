@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Agendamento, StatusVisita, STATUS_CONFIG, VENDEDORES, Periodo, PERIODO_CONFIG } from '@/lib/types';
+import { Agendamento, StatusVisita, STATUS_CONFIG, VENDEDORES, Periodo, PERIODO_CONFIG, TipoRecorrencia, RECORRENCIA_CONFIG } from '@/lib/types';
 import { contarAgendamentosPorDia } from '@/lib/agenda-store';
-import { Calendar, User, Clock, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Calendar, User, Clock, FileText, CheckCircle, AlertTriangle, Repeat } from 'lucide-react';
 
 interface FormularioAgendamentoProps {
   aberto: boolean;
@@ -17,7 +17,7 @@ interface FormularioAgendamentoProps {
   todosAgendamentos: Agendamento[];
   dataPreSelecionada?: string | null;
   onFechar: () => void;
-  onSalvar: (dados: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
+  onSalvar: (dados: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>, recorrencia?: TipoRecorrencia) => void;
 }
 
 export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, dataPreSelecionada, onFechar, onSalvar }: FormularioAgendamentoProps) {
@@ -33,6 +33,8 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
     resultadoVisita: '',
     retornoCombinado: '',
   });
+
+  const [recorrencia, setRecorrencia] = useState<TipoRecorrencia>('nenhuma');
 
   const agendamentosNoDia = formData.data 
     ? contarAgendamentosPorDia(todosAgendamentos, formData.data, agendamento?.id) 
@@ -61,6 +63,7 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
         resultadoVisita: '',
         retornoCombinado: '',
       });
+      setRecorrencia('nenhuma');
     }
   }, [agendamento, aberto, dataPre]);
 
@@ -77,7 +80,7 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
       observacoes: formData.observacoes || undefined,
       resultadoVisita: formData.resultadoVisita || undefined,
       retornoCombinado: formData.retornoCombinado || undefined,
-    });
+    }, recorrencia !== 'nenhuma' ? recorrencia : undefined);
     onFechar();
   };
 
@@ -175,6 +178,40 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
               </SelectContent>
             </Select>
           </div>
+
+          {/* Recorrência (apenas para novos agendamentos) */}
+          {!isEdicao && (
+            <div className="space-y-2">
+              <Label htmlFor="recorrencia" className="flex items-center gap-2">
+                <Repeat className="h-4 w-4 text-purple-600" />
+                Repetir
+              </Label>
+              <Select
+                value={recorrencia}
+                onValueChange={(val) => setRecorrencia(val as TipoRecorrencia)}
+              >
+                <SelectTrigger className="text-base">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(RECORRENCIA_CONFIG).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>
+                      <div className="flex flex-col">
+                        <span>{config.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {recorrencia !== 'nenhuma' && (
+                <p className="text-xs text-muted-foreground">
+                  {recorrencia === 'semanal' 
+                    ? 'Serão criados agendamentos para as próximas 4 semanas no mesmo dia da semana.'
+                    : 'Serão criados agendamentos para os próximos 3 meses no mesmo dia do mês.'}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Alerta de agendamentos no dia */}
           {agendamentosNoDia >= 2 && (
