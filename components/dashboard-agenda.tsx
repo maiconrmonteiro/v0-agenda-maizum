@@ -9,20 +9,22 @@ import { FormularioAgendamento } from './formulario-agendamento';
 import { ModalExclusao } from './modal-exclusao';
 import { EstadoVazio } from './estado-vazio';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { Plus } from 'lucide-react';
 import { Agendamento, FiltrosAgenda } from '@/lib/types';
+import { filtrarAgendamentos } from '@/lib/agenda-store';
 import {
-  carregarAgendamentos,
-  adicionarAgendamento,
+  buscarAgendamentosPorMes,
+  criarAgendamento,
   atualizarAgendamento,
   excluirAgendamento,
-  filtrarAgendamentos,
-} from '@/lib/agenda-store';
+} from '@/lib/db/agendamentos';
 
 export function DashboardAgenda() {
   const hoje = new Date();
   
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  const [carregando, setCarregando] = useState(true);
   const [filtros, setFiltros] = useState<FiltrosAgenda>({
     mes: hoje.getMonth(),
     ano: hoje.getFullYear(),
@@ -34,10 +36,17 @@ export function DashboardAgenda() {
   const [modalExclusaoAberto, setModalExclusaoAberto] = useState(false);
   const [agendamentoExcluindo, setAgendamentoExcluindo] = useState<Agendamento | null>(null);
 
-  // Carregar dados
+  // Carregar dados do banco
+  const carregarDados = useCallback(async () => {
+    setCarregando(true);
+    const dados = await buscarAgendamentosPorMes(filtros.ano, filtros.mes);
+    setAgendamentos(dados);
+    setCarregando(false);
+  }, [filtros.ano, filtros.mes]);
+
   useEffect(() => {
-    setAgendamentos(carregarAgendamentos());
-  }, []);
+    carregarDados();
+  }, [carregarDados]);
 
   // Agendamentos filtrados
   const agendamentosFiltrados = filtrarAgendamentos(agendamentos, filtros);
@@ -71,25 +80,25 @@ export function DashboardAgenda() {
     setModalExclusaoAberto(true);
   };
 
-  const handleSalvar = useCallback((dados: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
+  const handleSalvar = useCallback(async (dados: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
     if (agendamentoEditando) {
-      atualizarAgendamento(agendamentoEditando.id, dados);
+      await atualizarAgendamento(agendamentoEditando.id, dados);
     } else {
-      adicionarAgendamento(dados);
+      await criarAgendamento(dados);
     }
-    setAgendamentos(carregarAgendamentos());
+    await carregarDados();
     setFormularioAberto(false);
     setAgendamentoEditando(null);
-  }, [agendamentoEditando]);
+  }, [agendamentoEditando, carregarDados]);
 
-  const handleConfirmarExclusao = useCallback(() => {
+  const handleConfirmarExclusao = useCallback(async () => {
     if (agendamentoExcluindo) {
-      excluirAgendamento(agendamentoExcluindo.id);
-      setAgendamentos(carregarAgendamentos());
+      await excluirAgendamento(agendamentoExcluindo.id);
+      await carregarDados();
     }
     setModalExclusaoAberto(false);
     setAgendamentoExcluindo(null);
-  }, [agendamentoExcluindo]);
+  }, [agendamentoExcluindo, carregarDados]);
 
   const handleMesChange = (mes: number, ano: number) => {
     setFiltros({ ...filtros, mes, ano });
@@ -155,7 +164,12 @@ export function DashboardAgenda() {
           </div>
 
           {/* Lista de Agendamentos */}
-          {agendamentosFiltrados.length === 0 ? (
+          {carregando ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Spinner className="h-8 w-8 text-red-600" />
+              <p className="mt-3 text-sm text-muted-foreground">Carregando agendamentos...</p>
+            </div>
+          ) : agendamentosFiltrados.length === 0 ? (
             <EstadoVazio tipo={temFiltrosAtivos ? 'sem-resultados' : 'sem-registros'} />
           ) : (
             <div className="space-y-6">

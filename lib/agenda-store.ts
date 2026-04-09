@@ -1,9 +1,7 @@
 'use client';
 
 import { Agendamento, FiltrosAgenda } from './types';
-import { gerarAgendamentosMock } from './mock-data';
 
-const STORAGE_KEY = 'maizum_agendamentos';
 const AUTH_KEY = 'maizum_auth';
 
 // Senhas do sistema
@@ -34,77 +32,16 @@ export function fazerLogout(): void {
   localStorage.removeItem(AUTH_KEY);
 }
 
-// Funções de gerenciamento de agendamentos
-export function carregarAgendamentos(): Agendamento[] {
-  if (typeof window === 'undefined') return [];
-  
-  const dados = localStorage.getItem(STORAGE_KEY);
-  if (dados) {
-    try {
-      return JSON.parse(dados);
-    } catch {
-      return inicializarDadosMock();
-    }
-  }
-  return inicializarDadosMock();
-}
-
-function inicializarDadosMock(): Agendamento[] {
-  const agendamentos = gerarAgendamentosMock();
-  salvarAgendamentos(agendamentos);
-  return agendamentos;
-}
-
-export function salvarAgendamentos(agendamentos: Agendamento[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(agendamentos));
-}
-
-export function adicionarAgendamento(agendamento: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>): Agendamento {
-  const agendamentos = carregarAgendamentos();
-  const novoAgendamento: Agendamento = {
-    ...agendamento,
-    id: Math.random().toString(36).substring(2, 15),
-    criadoEm: new Date().toISOString(),
-    atualizadoEm: new Date().toISOString(),
-  };
-  agendamentos.push(novoAgendamento);
-  salvarAgendamentos(agendamentos);
-  return novoAgendamento;
-}
-
-export function atualizarAgendamento(id: string, dados: Partial<Agendamento>): Agendamento | null {
-  const agendamentos = carregarAgendamentos();
-  const index = agendamentos.findIndex(a => a.id === id);
-  if (index === -1) return null;
-  
-  agendamentos[index] = {
-    ...agendamentos[index],
-    ...dados,
-    atualizadoEm: new Date().toISOString(),
-  };
-  salvarAgendamentos(agendamentos);
-  return agendamentos[index];
-}
-
-export function excluirAgendamento(id: string): boolean {
-  const agendamentos = carregarAgendamentos();
-  const index = agendamentos.findIndex(a => a.id === id);
-  if (index === -1) return false;
-  
-  agendamentos.splice(index, 1);
-  salvarAgendamentos(agendamentos);
-  return true;
-}
-
+// Função utilitária para contar agendamentos por dia
 export function contarAgendamentosPorDia(agendamentos: Agendamento[], data: string, idExcluir?: string): number {
   if (!agendamentos || !Array.isArray(agendamentos)) return 0;
   return agendamentos.filter(a => a.data === data && a.id !== idExcluir).length;
 }
 
+// Função de filtragem local (usado após buscar do banco)
 export function filtrarAgendamentos(agendamentos: Agendamento[], filtros: FiltrosAgenda): Agendamento[] {
   return agendamentos.filter(agendamento => {
-    const dataAgendamento = new Date(agendamento.data);
+    const dataAgendamento = new Date(agendamento.data + 'T12:00:00');
     
     // Filtro por mês e ano
     if (dataAgendamento.getMonth() !== filtros.mes || dataAgendamento.getFullYear() !== filtros.ano) {
