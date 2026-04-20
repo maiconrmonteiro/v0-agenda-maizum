@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Agendamento, StatusVisita, STATUS_CONFIG, VENDEDORES, Periodo, PERIODO_CONFIG, TipoRecorrencia, RECORRENCIA_CONFIG } from '@/lib/types';
-import { contarAgendamentosPorDia } from '@/lib/agenda-store';
+import { contarAgendamentosPorDia, obterPeriodosOcupadosDia } from '@/lib/agenda-store';
 import { Calendar, User, Clock, FileText, CheckCircle, AlertTriangle, Repeat } from 'lucide-react';
 
 interface FormularioAgendamentoProps {
@@ -39,6 +39,11 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
   const agendamentosNoDia = formData.data 
     ? contarAgendamentosPorDia(todosAgendamentos, formData.data, agendamento?.id) 
     : 0;
+
+  const periodosOcupadosNoDia = formData.data
+    ? obterPeriodosOcupadosDia(todosAgendamentos, formData.data, agendamento?.id)
+    : [];
+
 
   useEffect(() => {
     if (agendamento) {
@@ -214,14 +219,21 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
           )}
 
           {/* Alerta de agendamentos no dia */}
-          {agendamentosNoDia >= 2 && (
+          {periodosOcupadosNoDia.length > 0 && (
             <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
               <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
               <div className="text-sm">
-                <p className="font-medium text-amber-800">Atenção: Dia com muitos compromissos</p>
+                <p className="font-medium text-amber-800">Atenção: Dia com compromissos</p>
                 <p className="text-amber-700">
-                  Já existem {agendamentosNoDia} agendamento{agendamentosNoDia > 1 ? 's' : ''} para esta data.
+                  {periodosOcupadosNoDia.includes('dia_todo') 
+                    ? 'Já existe um compromisso para o dia todo nesta data.'
+                    : `Já existe compromisso agendado para ${periodosOcupadosNoDia.map(p => p === 'manha' ? 'a manhã' : 'a tarde').join(' e ')} desta data.`}
                 </p>
+                {agendamentosNoDia > 0 && (
+                   <p className="text-amber-700 mt-1">
+                     Total: {agendamentosNoDia} agendamento{agendamentosNoDia > 1 ? 's' : ''} nesta data.
+                   </p>
+                )}
               </div>
             </div>
           )}

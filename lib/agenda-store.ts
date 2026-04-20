@@ -38,6 +38,23 @@ export function contarAgendamentosPorDia(agendamentos: Agendamento[], data: stri
   return agendamentos.filter(a => a.data === data && a.id !== idExcluir).length;
 }
 
+// Função utilitária para obter os períodos ocupados em um dia
+export function obterPeriodosOcupadosDia(agendamentos: Agendamento[], data: string, idExcluir?: string): string[] {
+  if (!agendamentos || !Array.isArray(agendamentos)) return [];
+  
+  const agendamentosDoDia = agendamentos.filter(a => a.data === data && a.id !== idExcluir);
+  
+  const periodosOcupados = new Set<string>();
+  
+  agendamentosDoDia.forEach(a => {
+    if (a.periodo) {
+      periodosOcupados.add(a.periodo);
+    }
+  });
+  
+  return Array.from(periodosOcupados);
+}
+
 // Função de filtragem local (usado após buscar do banco)
 export function filtrarAgendamentos(agendamentos: Agendamento[], filtros: FiltrosAgenda): Agendamento[] {
   return agendamentos.filter(agendamento => {
