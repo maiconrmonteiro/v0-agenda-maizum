@@ -9,18 +9,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Agendamento, StatusVisita, STATUS_CONFIG, VENDEDORES, Periodo, PERIODO_CONFIG, TipoRecorrencia, RECORRENCIA_CONFIG } from '@/lib/types';
 import { contarAgendamentosPorDia, obterPeriodosOcupadosDia } from '@/lib/agenda-store';
-import { Calendar, User, Clock, FileText, CheckCircle, AlertTriangle, Repeat } from 'lucide-react';
+import { Folga } from '@/lib/db/folgas';
+import { Calendar, User, Clock, FileText, CheckCircle, AlertTriangle, Repeat, Palmtree } from 'lucide-react';
 
 interface FormularioAgendamentoProps {
   aberto: boolean;
   agendamento?: Agendamento | null;
   todosAgendamentos: Agendamento[];
+  folgas: Folga[];
   dataPreSelecionada?: string | null;
   onFechar: () => void;
   onSalvar: (dados: Omit<Agendamento, 'id' | 'criadoEm' | 'atualizadoEm'>, recorrencia?: TipoRecorrencia) => void;
 }
 
-export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, dataPreSelecionada, onFechar, onSalvar }: FormularioAgendamentoProps) {
+export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, folgas, dataPreSelecionada, onFechar, onSalvar }: FormularioAgendamentoProps) {
   const dataPre = dataPreSelecionada ?? null;
   
   const [formData, setFormData] = useState({
@@ -43,6 +45,11 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
   const periodosOcupadosNoDia = formData.data
     ? obterPeriodosOcupadosDia(todosAgendamentos, formData.data, agendamento?.id)
     : [];
+
+  // Verificar se a data selecionada é uma folga
+  const folgaNoDia = formData.data
+    ? folgas.find(f => f.data === formData.data)
+    : null;
 
 
   useEffect(() => {
@@ -218,8 +225,27 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
             </div>
           )}
 
+          {/* Alerta de FOLGA — bloqueia agendamento */}
+          {folgaNoDia && (
+            <div className="flex items-start gap-3 rounded-lg border-2 border-teal-400 bg-teal-50 p-4">
+              <Palmtree className="mt-0.5 h-6 w-6 shrink-0 text-teal-600" />
+              <div className="text-sm">
+                <p className="font-semibold text-teal-800">🚫 Data bloqueada — Dia de Folga</p>
+                <p className="text-teal-700 mt-1">
+                  Esta data está registrada como folga da promotora.
+                  Não é possível agendar visitas neste dia.
+                </p>
+                {folgaNoDia.motivo && (
+                  <p className="text-teal-600 mt-1 italic">
+                    Motivo: {folgaNoDia.motivo}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Alerta de agendamentos no dia */}
-          {periodosOcupadosNoDia.length > 0 && (
+          {!folgaNoDia && periodosOcupadosNoDia.length > 0 && (
             <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
               <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
               <div className="text-sm">
@@ -314,9 +340,9 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
             <Button 
               type="submit" 
               className="w-full bg-red-600 text-white hover:bg-red-700 sm:w-auto"
-              disabled={!formData.data || !formData.cliente || !formData.vendedor}
+              disabled={!formData.data || !formData.cliente || !formData.vendedor || !!folgaNoDia}
             >
-              {isEdicao ? 'Salvar Alterações' : 'Adicionar'}
+              {folgaNoDia ? '🚫 Data Bloqueada' : isEdicao ? 'Salvar Alterações' : 'Adicionar'}
             </Button>
           </div>
         </form>
