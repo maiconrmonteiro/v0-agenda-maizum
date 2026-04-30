@@ -10,6 +10,7 @@ import { FormularioAgendamento } from './formulario-agendamento';
 import { FormularioFolga } from './formulario-folga';
 import { ModalExclusao } from './modal-exclusao';
 import { EstadoVazio } from './estado-vazio';
+import { CompromissoHoje } from './compromisso-hoje';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Plus, Palmtree } from 'lucide-react';
@@ -33,10 +34,12 @@ type EventoLista =
   | { tipo: 'agendamento'; dados: Agendamento }
   | { tipo: 'folga'; dados: Folga };
 
+const hoje = new Date();
+
 export function DashboardAgenda() {
-  const hoje = new Date();
   
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  const [compromissosHoje, setCompromissosHoje] = useState<Agendamento[]>([]);
   const [folgas, setFolgas] = useState<Folga[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [filtros, setFiltros] = useState<FiltrosAgenda>({
@@ -64,8 +67,22 @@ export function DashboardAgenda() {
     ]);
     setAgendamentos(dadosAgendamentos);
     setFolgas(dadosFolgas);
+    
+    // Se o mês selecionado é o mês atual, os compromissos de hoje já estão em dadosAgendamentos
+    // Mas para garantir que sempre temos os compromissos de hoje mesmo mudando de mês:
+    const hojeStr = hoje.toISOString().split('T')[0];
+    const hojeAno = hoje.getFullYear();
+    const hojeMes = hoje.getMonth();
+    
+    if (filtros.ano === hojeAno && filtros.mes === hojeMes) {
+      setCompromissosHoje(dadosAgendamentos.filter(a => a.data === hojeStr));
+    } else {
+      const dadosHoje = await buscarAgendamentosPorMes(hojeAno, hojeMes);
+      setCompromissosHoje(dadosHoje.filter(a => a.data === hojeStr));
+    }
+    
     setCarregando(false);
-  }, [filtros.ano, filtros.mes]);
+  }, [filtros.ano, filtros.mes, hoje]);
 
   useEffect(() => {
     carregarDados();
@@ -185,16 +202,14 @@ export function DashboardAgenda() {
       <Header />
       
       <main className="flex-1 px-4 py-6">
-        <div className="mx-auto max-w-2xl space-y-6">
-          {/* Título */}
-          <div className="text-center">
-            <h1 className="text-lg font-semibold text-foreground">
-              Agenda Mensal da Promotora
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Gerencie os agendamentos de visitas e degustações
-            </p>
-          </div>
+        <div className="mx-auto max-w-2xl space-y-8">
+          {/* Compromisso do Dia */}
+          <CompromissoHoje 
+            agendamentos={compromissosHoje} 
+            onEditar={handleEditar} 
+          />
+
+          <hr className="border-muted/50" />
 
           {/* Seletor de Mês */}
           <SeletorMes
@@ -253,7 +268,7 @@ export function DashboardAgenda() {
           ) : (
             <div className="space-y-6">
               {datasOrdenadas.map((data) => (
-                <div key={data} className="space-y-3">
+                <div key={data} id={`data-${data}`} className="space-y-3">
                   <h3 className="sticky top-[72px] z-10 -mx-4 bg-background px-4 py-2 text-sm font-semibold capitalize text-red-700">
                     {formatarDataGrupo(data)}
                   </h3>
