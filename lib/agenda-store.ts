@@ -32,6 +32,23 @@ export function fazerLogout(): void {
   localStorage.removeItem(AUTH_KEY);
 }
 
+const BIO_KEY = 'maizum_bio_registered';
+
+export function estaBioCadastrada(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(BIO_KEY) === 'true';
+}
+
+export function cadastrarBio(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(BIO_KEY, 'true');
+}
+
+export function removerBio(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(BIO_KEY);
+}
+
 // Função utilitária para contar agendamentos por dia
 export function contarAgendamentosPorDia(agendamentos: Agendamento[], data: string, idExcluir?: string): number {
   if (!agendamentos || !Array.isArray(agendamentos)) return 0;
