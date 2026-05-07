@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, Palmtree } from 'lucide-react';
+import { DatePickerMarcado } from '@/components/date-picker-marcado';
 
 interface FormularioFolgaProps {
   aberto: boolean;
@@ -55,14 +55,18 @@ export function FormularioFolga({ aberto, dataPreSelecionada, onFechar, onSalvar
               <Calendar className="h-4 w-4 text-teal-600" />
               Data da Folga *
             </Label>
-            <Input
-              id="data-folga"
-              type="date"
-              value={data}
-              onChange={(e) => setData(e.target.value)}
-              required
-              className="text-base"
-            />
+            <div className="space-y-2">
+              <DatePickerMarcado
+                value={data}
+                onChange={setData}
+                placeholder="Selecione a data da folga"
+                marcacoes={{
+                  folgas: [data],
+                }}
+                className="text-base"
+              />
+              <input id="data-folga" name="data-folga" required className="sr-only" value={data} readOnly />
+            </div>
           </div>
 
           {/* Motivo */}

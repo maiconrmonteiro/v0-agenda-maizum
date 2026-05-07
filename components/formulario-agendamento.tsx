@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,6 +10,8 @@ import { Agendamento, StatusVisita, STATUS_CONFIG, VENDEDORES, Periodo, PERIODO_
 import { contarAgendamentosPorDia, obterPeriodosOcupadosDia } from '@/lib/agenda-store';
 import { Folga } from '@/lib/db/folgas';
 import { Calendar, User, Clock, FileText, CheckCircle, AlertTriangle, Repeat, Palmtree } from 'lucide-react';
+import { DatePickerMarcado } from '@/components/date-picker-marcado';
+import { Input } from '@/components/ui/input';
 
 interface FormularioAgendamentoProps {
   aberto: boolean;
@@ -118,14 +119,18 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
               <Calendar className="h-4 w-4 text-red-600" />
               Data *
             </Label>
-            <Input
-              id="data"
-              type="date"
-              value={formData.data}
-              onChange={(e) => setFormData({ ...formData, data: e.target.value })}
-              required
-              className="text-base"
-            />
+            <div className="space-y-2">
+              <DatePickerMarcado
+                value={formData.data}
+                onChange={(val) => setFormData({ ...formData, data: val })}
+                marcacoes={{
+                  agendamentos: todosAgendamentos.map((a) => a.data),
+                  folgas: folgas.map((f) => f.data),
+                }}
+                className="text-base"
+              />
+              <input id="data" name="data" required className="sr-only" value={formData.data} readOnly />
+            </div>
           </div>
 
           {/* Cliente */}
