@@ -11,7 +11,6 @@ import { FormularioFolga } from './formulario-folga';
 import { ModalExclusao } from './modal-exclusao';
 import { EstadoVazio } from './estado-vazio';
 import { CompromissoHoje } from './compromisso-hoje';
-import { AgendaCalendarioFullscreen } from './agenda-calendario-fullscreen';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Plus, Palmtree } from 'lucide-react';
@@ -126,7 +125,6 @@ export function DashboardAgenda() {
 
   // Handlers
   const [dataPreSelecionada, setDataPreSelecionada] = useState<string | null>(null);
-  const [dataScrollPendente, setDataScrollPendente] = useState<string | null>(null);
 
   const handleNovoAgendamento = (data?: string) => {
     setAgendamentoEditando(null);
@@ -188,28 +186,6 @@ export function DashboardAgenda() {
     setFiltros({ ...filtros, mes, ano });
   };
 
-  // Seleção vinda do calendário fullscreen
-  const handleSelecionarDataNoCalendario = (dataISO: string) => {
-    const d = new Date(dataISO + 'T12:00:00');
-    const novoMes = d.getMonth();
-    const novoAno = d.getFullYear();
-    if (novoMes !== filtros.mes || novoAno !== filtros.ano) {
-      setFiltros({ ...filtros, mes: novoMes, ano: novoAno });
-    }
-    setDataScrollPendente(dataISO);
-  };
-
-  // Após carregar/renderizar a lista do mês, rolar até o dia escolhido
-  useEffect(() => {
-    if (!dataScrollPendente) return;
-    if (carregando) return;
-    const el = document.getElementById(`data-${dataScrollPendente}`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setDataScrollPendente(null);
-    }
-  }, [carregando, dataScrollPendente, datasOrdenadas]);
-
   const formatarDataGrupo = (dataStr: string) => {
     const data = new Date(dataStr + 'T12:00:00');
     return data.toLocaleDateString('pt-BR', {
@@ -240,17 +216,6 @@ export function DashboardAgenda() {
             mes={filtros.mes}
             ano={filtros.ano}
             onChange={handleMesChange}
-          />
-
-          {/* Calendário fullscreen (mobile) */}
-          <AgendaCalendarioFullscreen
-            mes={filtros.mes}
-            ano={filtros.ano}
-            // No calendário, sempre mostramos os compromissos reais do mês,
-            // independentemente de filtros (evita "sem compromissos" quando há eventos).
-            agendamentos={agendamentos}
-            folgas={temFiltrosEspecificos ? [] : folgas}
-            onSelecionarData={handleSelecionarDataNoCalendario}
           />
 
           {/* Botões de Ação */}
