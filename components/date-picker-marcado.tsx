@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { format, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Calendar as CalendarIcon } from 'lucide-react'
+import { AlertTriangle, Calendar as CalendarIcon, Palmtree } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -17,6 +17,9 @@ import {
 } from '@/components/ui/drawer'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { contarAgendamentosPorDia, obterPeriodosOcupadosDia } from '@/lib/agenda-store'
+import type { Folga } from '@/lib/db/folgas'
+import type { Agendamento, Periodo } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 type Marcacoes = {
@@ -34,6 +37,8 @@ export function DatePickerMarcado({
   onChange,
   placeholder = 'Selecione uma data',
   marcacoes,
+  agendamentosDetalhados,
+  folgasDetalhadas,
   className,
   disabled,
 }: {
@@ -41,6 +46,8 @@ export function DatePickerMarcado({
   onChange: (value: string) => void
   placeholder?: string
   marcacoes?: Marcacoes
+  agendamentosDetalhados?: Agendamento[]
+  folgasDetalhadas?: Folga[]
   className?: string
   disabled?: boolean
 }) {
@@ -108,6 +115,87 @@ export function DatePickerMarcado({
     </>
   )
 
+  const periodosOcupadosNoDia = React.useMemo(() => {
+    if (!agendamentosDetalhados?.length) return []
+    if (!value) return []
+    return obterPeriodosOcupadosDia(agendamentosDetalhados, value)
+  }, [agendamentosDetalhados, value])
+
+  const agendamentosNoDia = React.useMemo(() => {
+    if (!agendamentosDetalhados?.length) return 0
+    if (!value) return 0
+    return contarAgendamentosPorDia(agendamentosDetalhados, value)
+  }, [agendamentosDetalhados, value])
+
+  const folgaNoDia = React.useMemo(() => {
+    if (!folgasDetalhadas?.length) return null
+    if (!value) return null
+    return folgasDetalhadas.find((f) => f.data === value) ?? null
+  }, [folgasDetalhadas, value])
+
+  const textoPeriodos = (periodos: Periodo[]) => {
+    if (periodos.includes('dia_todo')) return 'o dia todo'
+    const parts = periodos.map((p) => (p === 'manha' ? 'a manhã' : 'a tarde'))
+    if (parts.length === 1) return parts[0]
+    return `${parts[0]} e ${parts[1]}`
+  }
+
+  const AlertMobile = (() => {
+    // Só mostra o painel se temos dados detalhados para calcular os alertas
+    if (!value) return null
+    if (!agendamentosDetalhados && !folgasDetalhadas) return null
+
+    if (folgaNoDia) {
+      return (
+        <div className="border-t bg-background px-4 py-3">
+          <div className="flex items-start gap-3 rounded-lg border-2 border-teal-400 bg-teal-50 p-4">
+            <Palmtree className="mt-0.5 h-6 w-6 shrink-0 text-teal-600" />
+            <div className="text-sm">
+              <p className="font-semibold text-teal-800">🚫 Data bloqueada — Dia de Folga</p>
+              <p className="mt-1 text-teal-700">
+                Esta data está registrada como folga da promotora. Não é possível agendar visitas neste dia.
+              </p>
+              {folgaNoDia.motivo && (
+                <p className="mt-1 text-teal-600 italic">Motivo: {folgaNoDia.motivo}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    if (periodosOcupadosNoDia.length > 0) {
+      return (
+        <div className="border-t bg-background px-4 py-3">
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div className="text-sm">
+              <p className="font-medium text-amber-800">Atenção: Dia com compromissos</p>
+              <p className="text-amber-700">
+                {periodosOcupadosNoDia.includes('dia_todo')
+                  ? 'Já existe um compromisso para o dia todo nesta data.'
+                  : `Já existe compromisso agendado para ${textoPeriodos(periodosOcupadosNoDia as Periodo[])} desta data.`}
+              </p>
+              {agendamentosNoDia > 0 && (
+                <p className="mt-1 text-amber-700">
+                  Total: {agendamentosNoDia} agendamento{agendamentosNoDia > 1 ? 's' : ''} nesta data.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="border-t bg-background px-4 py-3">
+        <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
+          {format(parseISO(value), "EEEE, dd 'de' MMMM", { locale: ptBR })} — sem compromissos.
+        </div>
+      </div>
+    )
+  })()
+
   if (isMobile) {
     return (
       <Drawer>
@@ -116,7 +204,8 @@ export function DatePickerMarcado({
           <DrawerHeader className="pb-2">
             <DrawerTitle>Selecione a data</DrawerTitle>
           </DrawerHeader>
-          <div className="px-2 pb-4">{CalendarContent}</div>
+          <div className="px-2 pb-2">{CalendarContent}</div>
+          {AlertMobile}
           <div className="border-t p-4">
             <DrawerClose asChild>
               <Button variant="outline" className="w-full">

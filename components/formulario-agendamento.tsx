@@ -127,6 +127,8 @@ export function FormularioAgendamento({ aberto, agendamento, todosAgendamentos, 
                   agendamentos: todosAgendamentos.map((a) => a.data),
                   folgas: folgas.map((f) => f.data),
                 }}
+                agendamentosDetalhados={todosAgendamentos}
+                folgasDetalhadas={folgas}
                 className="text-base"
               />
               <input id="data" name="data" required className="sr-only" value={formData.data} readOnly />
