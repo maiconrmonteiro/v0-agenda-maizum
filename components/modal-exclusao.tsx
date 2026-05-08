@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertTriangle, Lock } from 'lucide-react';
+import { AlertTriangle, Eye, EyeOff, Lock } from 'lucide-react';
 import { verificarSenhaAdmin } from '@/lib/agenda-store';
 
 interface ModalExclusaoProps {
@@ -17,6 +17,7 @@ interface ModalExclusaoProps {
 
 export function ModalExclusao({ aberto, nomeItem, onFechar, onConfirmar }: ModalExclusaoProps) {
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
 
@@ -35,6 +36,7 @@ export function ModalExclusao({ aberto, nomeItem, onFechar, onConfirmar }: Modal
 
   const handleFechar = () => {
     setSenha('');
+    setMostrarSenha(false);
     setErro('');
     setCarregando(false);
     onFechar();
@@ -62,18 +64,29 @@ export function ModalExclusao({ aberto, nomeItem, onFechar, onConfirmar }: Modal
               <Lock className="h-4 w-4" />
               Senha Administrativa
             </Label>
-            <Input
-              id="senha-admin"
-              type="password"
-              placeholder="Digite a senha administrativa"
-              value={senha}
-              onChange={(e) => {
-                setSenha(e.target.value);
-                setErro('');
-              }}
-              className={erro ? 'border-red-500' : ''}
-              autoFocus
-            />
+            <div className="relative">
+              <Input
+                id="senha-admin"
+                type={mostrarSenha ? 'text' : 'password'}
+                placeholder="Digite a senha administrativa"
+                value={senha}
+                onChange={(e) => {
+                  setSenha(e.target.value);
+                  setErro('');
+                }}
+                className={`pr-10 ${erro ? 'border-red-500' : ''}`}
+                autoComplete="current-password"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarSenha(!mostrarSenha)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+              >
+                {mostrarSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {erro && <p className="text-sm text-red-600">{erro}</p>}
           </div>
         </div>

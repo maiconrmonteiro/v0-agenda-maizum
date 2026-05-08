@@ -6,7 +6,7 @@ const AUTH_KEY = 'maizum_auth';
 
 // Senhas do sistema
 export const SENHA_ACESSO = 'maizum2026';
-export const SENHA_ADMIN = 'admin2026';
+export const SENHA_ADMIN = 'Maizum';
 
 // Funções de autenticação
 export function verificarSenhaAcesso(senha: string): boolean {
