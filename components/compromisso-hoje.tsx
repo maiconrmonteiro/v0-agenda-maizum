@@ -41,7 +41,7 @@ export function CompromissoHoje({ agendamentos, onEditar }: CompromissoHojeProps
         <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
           {saudacao}, <span className="text-red-700">Dani</span>!
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="bg-red-50 text-red-700 hover:bg-red-50 border-red-100 px-2 py-0.5 text-xs font-semibold">
             {agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
           </Badge>
@@ -68,27 +68,33 @@ export function CompromissoHoje({ agendamentos, onEditar }: CompromissoHojeProps
                 <div className="absolute inset-y-0 left-0 w-1.5 bg-red-600 transition-all group-hover:w-2" />
                 <CardContent className="p-5">
                   <div className="flex flex-col gap-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-1.5">
+                    <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
+                      <div className="min-w-0 flex-1 space-y-1.5">
                         <div className="flex items-center gap-2.5">
                           <div className="p-2 rounded-full bg-red-50 text-red-600 group-hover:bg-red-100 transition-colors">
                             <MapPin className="h-5 w-5" />
                           </div>
-                          <h3 className="text-xl font-bold text-foreground leading-tight group-hover:text-red-700 transition-colors">
+                          <h3 className="min-w-0 break-words text-xl font-bold text-foreground leading-tight group-hover:text-red-700 transition-colors">
                             {compromisso.cliente}
                           </h3>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground pl-10 font-medium">
                           <User className="h-4 w-4" />
-                          <span>Vendedor: {compromisso.vendedor}</span>
+                          <span className="min-w-0 break-words">Vendedor: {compromisso.vendedor}</span>
                         </div>
                       </div>
-                      <Badge className={cn("px-3 py-1 text-xs font-bold uppercase tracking-wider", status.bgColor, status.color)}>
+                      <Badge
+                        className={cn(
+                          "shrink-0 px-3 py-1 text-xs font-bold uppercase tracking-wider",
+                          status.bgColor,
+                          status.color
+                        )}
+                      >
                         {status.label}
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-6 text-sm pt-4 border-t border-muted/30 ml-10">
+                    <div className="flex flex-wrap items-center gap-3 text-sm pt-4 border-t border-muted/30 sm:ml-10">
                       {periodo && (
                         <div className="flex items-center gap-2 font-bold text-foreground bg-muted/30 px-3 py-1 rounded-full">
                           <span className="text-xl leading-none">{periodo.icon}</span>
@@ -102,7 +108,7 @@ export function CompromissoHoje({ agendamentos, onEditar }: CompromissoHojeProps
                     </div>
 
                     {compromisso.observacoes && (
-                      <div className="bg-amber-50/70 p-3 rounded-lg text-sm text-amber-900 border border-amber-100/50 shadow-sm ml-10">
+                      <div className="bg-amber-50/70 p-3 rounded-lg text-sm text-amber-900 border border-amber-100/50 shadow-sm sm:ml-10">
                         <p className="font-semibold text-xs uppercase text-amber-700 mb-1 flex items-center gap-1">
                           <FileText className="h-3 w-3" /> Observações
                         </p>
